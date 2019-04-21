@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 void main() => runApp(NotesApp());
 
@@ -43,20 +45,40 @@ class _NotesPageState extends State<NotesPage> {
   }
 
   Future<void> _retrieveNotes() async {
-    final json = DefaultAssetBundle
-        .of(context)
-        .loadString('assets/data/notes.json');
-    final data = JsonDecoder().convert(await json);
-    if(data is! Map) {
-      throw ('Data retrieved from file is not a Map');
+    try{
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/notes.json');
+      var jsonString = file.readAsString();
+
+      final data = JsonDecoder().convert(await jsonString);
+      if(data is! Map) {
+        throw ('Data retrieved from file is not a Map');
+      }
+
+      data['Notes'].forEach((note){
+        setState(() {
+          _notes.add(note['note']);
+        });
+      });
+    }catch (e) {
+      print('Error reading file $e');
     }
 
-    data['Notes'].forEach((note){
-      setState(() {
-        _notes.add(note['note']);
-      });
-    });
+  }
 
+  Future<void> _saveTest() async {
+    var jsonString = '{"Notes":[';
+    _notes.forEach((note){
+      jsonString += '{"note":"$note"},';
+    });
+    jsonString += '{"note":"Test note"}';
+    jsonString += ']}';
+
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/notes.json');
+    await file.writeAsString(jsonString);
+    _notes.clear();
+    await _retrieveNotes();
   }
 
   @override
@@ -90,7 +112,9 @@ class _NotesPageState extends State<NotesPage> {
         itemCount: _notes.length,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          _saveTest();
+        },
         tooltip: 'Add note',
         child: Icon(Icons.add),
       ),
