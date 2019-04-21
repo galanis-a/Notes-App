@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 
 void main() => runApp(NotesApp());
 
@@ -31,7 +32,32 @@ class NotesPage extends StatefulWidget {
 }
 
 class _NotesPageState extends State<NotesPage> {
-  final _notes = ['test 1', 'test 2', 'test 3'];
+  final _notes = <String>[];
+
+  @override
+  Future<void> didChangeDependencies() async {
+    super.didChangeDependencies();
+    if(_notes.isEmpty) {
+      await _retrieveNotes();
+    }
+  }
+
+  Future<void> _retrieveNotes() async {
+    final json = DefaultAssetBundle
+        .of(context)
+        .loadString('assets/data/notes.json');
+    final data = JsonDecoder().convert(await json);
+    if(data is! Map) {
+      throw ('Data retrieved from file is not a Map');
+    }
+
+    data['Notes'].forEach((note){
+      setState(() {
+        _notes.add(note['note']);
+      });
+    });
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +71,7 @@ class _NotesPageState extends State<NotesPage> {
           var _noteNumber = index + 1;
 
           return Container(
-            height: 100.0,
+            height: 80.0,
             child: Padding(
               padding: EdgeInsets.all(8.0),
               child: Row(

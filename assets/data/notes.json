@@ -1,0 +1,13 @@
+{
+  "Notes": [
+    {
+      "note": "Note 1 from Json file"
+    },
+    {
+      "note": "Note 2 from Json file"
+    },
+    {
+      "note": "Note 3 from Json file"
+    }
+  ]
+}
