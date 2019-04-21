@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'add_note_page.dart';
 
 class NotesPage extends StatefulWidget {
   @override
@@ -14,39 +15,45 @@ class _NotesPageState extends State<NotesPage> {
   @override
   Future<void> didChangeDependencies() async {
     super.didChangeDependencies();
-    if(_notes.isEmpty) {
+    if (_notes.isEmpty) {
       await _retrieveNotes();
     }
   }
 
   Future<void> _retrieveNotes() async {
-    try{
+    try {
       final directory = await getApplicationDocumentsDirectory();
       final file = File('${directory.path}/notes.json');
       var jsonString = file.readAsString();
 
       final data = JsonDecoder().convert(await jsonString);
-      if(data is! Map) {
+      if (data is! Map) {
         throw ('Data retrieved from file is not a Map');
       }
 
-      data['Notes'].forEach((note){
+      data['Notes'].forEach((note) {
         setState(() {
           _notes.add(note['note']);
         });
       });
-    }catch (e) {
+    } catch (e) {
       print('Error reading file $e');
     }
-
   }
 
-  Future<void> _saveTest() async {
+  void _navigateToAddNote(BuildContext context) {
+    Navigator.of(context)
+        .push(MaterialPageRoute<Null>(builder: (BuildContext context) {
+          return AddNotePage(doSave: _saveNote,);
+    }));
+  }
+
+  Future<void> _saveNote(String newNote) async {
     var jsonString = '{"Notes":[';
-    _notes.forEach((note){
+    _notes.forEach((note) {
       jsonString += '{"note":"$note"},';
     });
-    jsonString += '{"note":"Test note"}';
+    jsonString += '{"note":"$newNote"}';
     jsonString += ']}';
 
     final directory = await getApplicationDocumentsDirectory();
@@ -88,7 +95,7 @@ class _NotesPageState extends State<NotesPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _saveTest();
+          _navigateToAddNote(context);
         },
         tooltip: 'Add note',
         child: Icon(Icons.add),
