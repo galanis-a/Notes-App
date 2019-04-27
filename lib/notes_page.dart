@@ -48,7 +48,33 @@ class _NotesPageState extends State<NotesPage> {
     }));
   }
 
-  Future<void> _saveNote(String newNote) async {
+  void _navigateToEditNote(BuildContext context,int index) {
+    Navigator.of(context)
+        .push(MaterialPageRoute<Null>(builder: (BuildContext context) {
+      return AddNotePage(doSave: _saveEditedNote, noteIndex: index, note: _notes[index],);
+    }));
+  }
+
+  Future<void> _saveEditedNote(String noteText, int index) async {
+    _notes[index] = noteText;
+    var jsonString = '{"Notes":[';
+    _notes.asMap().forEach((i, note) {
+      if(i+1 == _notes.length ) {
+        jsonString += '{"note":"$note"}';
+      }else {
+        jsonString += '{"note":"$note"},';
+      }
+    });
+    jsonString += ']}';
+
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/notes.json');
+    await file.writeAsString(jsonString);
+    _notes.clear();
+    await _retrieveNotes();
+  }
+
+  Future<void> _saveNote(String newNote, int index) async {
     var jsonString = '{"Notes":[';
     _notes.forEach((note) {
       jsonString += '{"note":"$note"},';
@@ -76,17 +102,20 @@ class _NotesPageState extends State<NotesPage> {
 
           return Container(
             height: 80.0,
-            child: Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text('#$_noteNumber'),
-                  ),
-                  Text('$_note'),
-                ],
+            child: GestureDetector(
+              onTap: () => _navigateToEditNote(context, index),
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text('#$_noteNumber'),
+                    ),
+                    Text('$_note'),
+                  ],
+                ),
               ),
             ),
           );

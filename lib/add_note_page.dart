@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 class AddNotePage extends StatelessWidget {
   final String note;
-  final Function(String) doSave;
+  final Function(String, int) doSave;
+  final int noteIndex;
 
-  const AddNotePage({this.note, @required this.doSave});
+  const AddNotePage({this.note, @required this.doSave, this.noteIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,11 @@ class AddNotePage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          doSave(controller.text);
+          if(noteIndex == null) {
+            doSave(controller.text, null);
+          }else {
+            doSave(controller.text, noteIndex);
+          }
           Navigator.pop(context);
         },
         tooltip: 'Save note',
