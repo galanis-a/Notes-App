@@ -57,6 +57,14 @@ class _NotesPageState extends State<NotesPage> {
 
   Future<void> _saveEditedNote(String noteText, int index) async {
     _notes[index] = noteText;
+    var jsonString = convertNotesToJson();
+
+    await saveNotesToFile(jsonString);
+    _notes.clear();
+    await _retrieveNotes();
+  }
+
+  String convertNotesToJson() {
     var jsonString = '{"Notes":[';
     _notes.asMap().forEach((i, note) {
       if(i+1 == _notes.length ) {
@@ -67,24 +75,21 @@ class _NotesPageState extends State<NotesPage> {
     });
     jsonString += ']}';
 
+    return jsonString;
+  }
+
+  Future<void> saveNotesToFile(String jsonNotes) async {
     final directory = await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/notes.json');
-    await file.writeAsString(jsonString);
-    _notes.clear();
-    await _retrieveNotes();
+    await file.writeAsString(jsonNotes);
   }
 
   Future<void> _saveNote(String newNote, int index) async {
-    var jsonString = '{"Notes":[';
-    _notes.forEach((note) {
-      jsonString += '{"note":"$note"},';
-    });
-    jsonString += '{"note":"$newNote"}';
-    jsonString += ']}';
+    _notes.add(newNote);
 
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/notes.json');
-    await file.writeAsString(jsonString);
+    var jsonString = convertNotesToJson();
+
+    await saveNotesToFile(jsonString);
     _notes.clear();
     await _retrieveNotes();
   }
