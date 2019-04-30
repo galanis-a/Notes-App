@@ -57,9 +57,9 @@ class _NotesPageState extends State<NotesPage> {
   String convertNotesToJson() {
     var jsonString = '{"Notes":[';
     _notes.asMap().forEach((i, note) {
-      if(i+1 == _notes.length ) {
+      if (i + 1 == _notes.length) {
         jsonString += '{"note":"$note"}';
-      }else {
+      } else {
         jsonString += '{"note":"$note"},';
       }
     });
@@ -81,7 +81,6 @@ class _NotesPageState extends State<NotesPage> {
 
   @override
   Widget build(BuildContext context) {
-
     Future<void> _deleteNote(index) async {
       setState(() {
         _notes.removeAt(index);
@@ -100,15 +99,32 @@ class _NotesPageState extends State<NotesPage> {
 
           return Dismissible(
             key: Key(_note),
+            direction: DismissDirection.endToStart,
             onDismissed: (direction) async {
               _deleteNote(index);
-              Scaffold.of(context).showSnackBar(SnackBar(content: Text('Note deleted')));
+              Scaffold.of(context)
+                  .showSnackBar(SnackBar(content: Text('Note deleted')));
             },
-            background: Container(color: Colors.red,),
+            background: Container(
+              color: Colors.red,
+              alignment: AlignmentDirectional.centerEnd,
+              child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Icon(
+                  Icons.delete,
+                  color: Colors.white,
+                ),
+              ),
+            ),
             child: Container(
               height: 80.0,
               child: GestureDetector(
-                onTap: () => Navigator.of(context).pushNamed('/edit', arguments: NoteArguments(note: _note, doSave: _saveEditedNote, noteIndex: index, doDelete: _deleteNote)),
+                onTap: () => Navigator.of(context).pushNamed('/edit',
+                    arguments: NoteArguments(
+                        note: _note,
+                        doSave: _saveEditedNote,
+                        noteIndex: index,
+                        doDelete: _deleteNote)),
                 child: Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Row(
@@ -129,7 +145,8 @@ class _NotesPageState extends State<NotesPage> {
         itemCount: _notes.length,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).pushNamed('/add',arguments: NoteArguments(doSave: _saveNote)),
+        onPressed: () => Navigator.of(context)
+            .pushNamed('/add', arguments: NoteArguments(doSave: _saveNote)),
         tooltip: 'Add note',
         child: Icon(Icons.add),
       ),
