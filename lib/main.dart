@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'notes_page.dart';
+import 'package:notes_app/route_generator.dart';
 
 void main() => runApp(NotesApp());
 
@@ -21,7 +21,8 @@ class NotesApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: NotesPage(),
+      initialRoute: '/',
+      onGenerateRoute: RouteGenerator.generateRoute,
     );
   }
 }

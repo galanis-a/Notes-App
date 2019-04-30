@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'add_note_page.dart';
+import 'package:notes_app/note_arguments.dart';
 
 class NotesPage extends StatefulWidget {
   @override
@@ -39,20 +39,6 @@ class _NotesPageState extends State<NotesPage> {
     } catch (e) {
       print('Error reading file $e');
     }
-  }
-
-  void _navigateToAddNote(BuildContext context) {
-    Navigator.of(context)
-        .push(MaterialPageRoute<Null>(builder: (BuildContext context) {
-          return AddNotePage(doSave: _saveNote,);
-    }));
-  }
-
-  void _navigateToEditNote(BuildContext context,int index) {
-    Navigator.of(context)
-        .push(MaterialPageRoute<Null>(builder: (BuildContext context) {
-      return AddNotePage(doSave: _saveEditedNote, noteIndex: index, note: _notes[index],);
-    }));
   }
 
   Future<void> _saveEditedNote(String noteText, int index) async {
@@ -108,7 +94,7 @@ class _NotesPageState extends State<NotesPage> {
           return Container(
             height: 80.0,
             child: GestureDetector(
-              onTap: () => _navigateToEditNote(context, index),
+              onTap: () => Navigator.of(context).pushNamed('/edit', arguments: NoteArguments(note: _note, doSave: _saveEditedNote, noteIndex: index)),
               child: Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Row(
@@ -128,9 +114,7 @@ class _NotesPageState extends State<NotesPage> {
         itemCount: _notes.length,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _navigateToAddNote(context);
-        },
+        onPressed: () => Navigator.of(context).pushNamed('/add',arguments: NoteArguments(doSave: _saveNote)),
         tooltip: 'Add note',
         child: Icon(Icons.add),
       ),
