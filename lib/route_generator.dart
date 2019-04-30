@@ -18,8 +18,8 @@ class RouteGenerator {
         return _errorRoute();
 
       case '/edit':
-        if(args.doSave is Function(String, int) && args.noteIndex is int && args.note is String) {
-          return MaterialPageRoute(builder: (_) => AddNotePage(doSave: args.doSave, noteIndex: args.noteIndex, note: args.note));
+        if(args.doSave is Function(String, int) && args.noteIndex is int && args.note is String && args.doDelete is Function(int)) {
+          return MaterialPageRoute(builder: (_) => AddNotePage(doSave: args.doSave, noteIndex: args.noteIndex, note: args.note, doDelete: args.doDelete,));
         }
 
         return _errorRoute();

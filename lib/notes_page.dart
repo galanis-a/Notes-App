@@ -76,12 +76,19 @@ class _NotesPageState extends State<NotesPage> {
 
   Future<void> _saveNote(String newNote, int index) async {
     _notes.add(newNote);
-
     await refreshNotes();
   }
 
   @override
   Widget build(BuildContext context) {
+
+    Future<void> _deleteNote(index) async {
+      setState(() {
+        _notes.removeAt(index);
+      });
+      await refreshNotes();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Notes'),
@@ -94,15 +101,14 @@ class _NotesPageState extends State<NotesPage> {
           return Dismissible(
             key: Key(_note),
             onDismissed: (direction) async {
-              _notes.removeAt(index);
-              await refreshNotes();
+              _deleteNote(index);
               Scaffold.of(context).showSnackBar(SnackBar(content: Text('Note deleted')));
             },
             background: Container(color: Colors.red,),
             child: Container(
               height: 80.0,
               child: GestureDetector(
-                onTap: () => Navigator.of(context).pushNamed('/edit', arguments: NoteArguments(note: _note, doSave: _saveEditedNote, noteIndex: index)),
+                onTap: () => Navigator.of(context).pushNamed('/edit', arguments: NoteArguments(note: _note, doSave: _saveEditedNote, noteIndex: index, doDelete: _deleteNote)),
                 child: Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Row(
