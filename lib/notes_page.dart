@@ -43,6 +43,10 @@ class _NotesPageState extends State<NotesPage> {
 
   Future<void> _saveEditedNote(String noteText, int index) async {
     _notes[index] = noteText;
+    await refreshNotes();
+  }
+
+  Future<void> refreshNotes() async {
     var jsonString = convertNotesToJson();
 
     await saveNotesToFile(jsonString);
@@ -73,11 +77,7 @@ class _NotesPageState extends State<NotesPage> {
   Future<void> _saveNote(String newNote, int index) async {
     _notes.add(newNote);
 
-    var jsonString = convertNotesToJson();
-
-    await saveNotesToFile(jsonString);
-    _notes.clear();
-    await _retrieveNotes();
+    await refreshNotes();
   }
 
   @override
@@ -91,21 +91,30 @@ class _NotesPageState extends State<NotesPage> {
           var _note = _notes[index];
           var _noteNumber = index + 1;
 
-          return Container(
-            height: 80.0,
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pushNamed('/edit', arguments: NoteArguments(note: _note, doSave: _saveEditedNote, noteIndex: index)),
-              child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Text('#$_noteNumber'),
-                    ),
-                    Text('$_note'),
-                  ],
+          return Dismissible(
+            key: Key(_note),
+            onDismissed: (direction) async {
+              _notes.removeAt(index);
+              await refreshNotes();
+              Scaffold.of(context).showSnackBar(SnackBar(content: Text('Note deleted')));
+            },
+            background: Container(color: Colors.red,),
+            child: Container(
+              height: 80.0,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pushNamed('/edit', arguments: NoteArguments(note: _note, doSave: _saveEditedNote, noteIndex: index)),
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text('#$_noteNumber'),
+                      ),
+                      Text('$_note'),
+                    ],
+                  ),
                 ),
               ),
             ),
