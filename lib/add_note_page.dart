@@ -29,6 +29,15 @@ class AddNotePage extends StatelessWidget {
       }
     }
 
+    _saveAndBack() {
+      if(noteIndex == null) {
+        doSave(controller.text, null);
+      }else {
+        doSave(controller.text, noteIndex);
+      }
+      Navigator.pop(context);
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Add Note'),
@@ -37,7 +46,12 @@ class AddNotePage extends StatelessWidget {
       body: Container(
         padding: EdgeInsets.all(16.0),
         child: TextField(
+          maxLines: null,
+          autofocus: true,
           controller: controller,
+          onSubmitted: (value) {
+            _saveAndBack();
+          },
           decoration: InputDecoration(
             labelText: 'Note',
           ),
@@ -45,12 +59,7 @@ class AddNotePage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          if(noteIndex == null) {
-            doSave(controller.text, null);
-          }else {
-            doSave(controller.text, noteIndex);
-          }
-          Navigator.pop(context);
+          _saveAndBack();
         },
         tooltip: 'Save note',
         child: Icon(Icons.save),
