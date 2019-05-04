@@ -134,7 +134,15 @@ class _NotesPageState extends State<NotesPage> {
                         padding: EdgeInsets.all(16.0),
                         child: Text('#$_noteNumber'),
                       ),
-                      Text('$_note'),
+                      Flexible(
+                        child: Container(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text(
+                            '$_note',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
