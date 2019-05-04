@@ -10,17 +10,18 @@ class NotesPage extends StatefulWidget {
 }
 
 class _NotesPageState extends State<NotesPage> {
-  final _notes = <String>[];
+  final _newNotes = <Map>[];
 
   @override
   Future<void> didChangeDependencies() async {
     super.didChangeDependencies();
-    if (_notes.isEmpty) {
+    if (_newNotes.isEmpty) {
       await _retrieveNotes();
     }
   }
 
   Future<void> _retrieveNotes() async {
+
     try {
       final directory = await getApplicationDocumentsDirectory();
       final file = File('${directory.path}/notes.json');
@@ -33,16 +34,17 @@ class _NotesPageState extends State<NotesPage> {
 
       data['Notes'].forEach((note) {
         setState(() {
-          _notes.add(note['note']);
+          _newNotes.add(note);
         });
       });
+
     } catch (e) {
       print('Error reading file $e');
     }
   }
 
   Future<void> _saveEditedNote(String noteText, int index) async {
-    _notes[index] = noteText;
+    _newNotes[index]['note'] = noteText;
     await refreshNotes();
   }
 
@@ -50,20 +52,14 @@ class _NotesPageState extends State<NotesPage> {
     var jsonString = convertNotesToJson();
 
     await saveNotesToFile(jsonString);
-    _notes.clear();
+    _newNotes.clear();
     await _retrieveNotes();
   }
 
   String convertNotesToJson() {
-    var jsonString = '{"Notes":[';
-    _notes.asMap().forEach((i, note) {
-      if (i + 1 == _notes.length) {
-        jsonString += '{"note":"$note"}';
-      } else {
-        jsonString += '{"note":"$note"},';
-      }
-    });
-    jsonString += ']}';
+    var jsonString = '{"Notes":';
+    jsonString += JsonEncoder().convert(_newNotes);
+    jsonString += '}';
 
     return jsonString;
   }
@@ -75,7 +71,7 @@ class _NotesPageState extends State<NotesPage> {
   }
 
   Future<void> _saveNote(String newNote, int index) async {
-    _notes.add(newNote);
+    _newNotes.add({'note': newNote, 'created_at': DateTime.now().toString()});
     await refreshNotes();
   }
 
@@ -83,7 +79,7 @@ class _NotesPageState extends State<NotesPage> {
   Widget build(BuildContext context) {
     Future<void> _deleteNote(index) async {
       setState(() {
-        _notes.removeAt(index);
+       _newNotes.removeAt(index);
       });
       await refreshNotes();
     }
@@ -94,11 +90,14 @@ class _NotesPageState extends State<NotesPage> {
       ),
       body: ListView.builder(
         itemBuilder: (BuildContext context, int index) {
-          var _note = _notes[index];
+          var _note = _newNotes[index];
           var _noteNumber = index + 1;
 
+          DateTime date = DateTime.parse(_note['created_at']);
+          var dateString = '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}';
+
           return Dismissible(
-            key: Key(_note),
+            key: Key(_note['note']),
             direction: DismissDirection.endToStart,
             onDismissed: (direction) async {
               _deleteNote(index);
@@ -121,7 +120,7 @@ class _NotesPageState extends State<NotesPage> {
               child: GestureDetector(
                 onTap: () => Navigator.of(context).pushNamed('/edit',
                     arguments: NoteArguments(
-                        note: _note,
+                        note: _note['note'],
                         doSave: _saveEditedNote,
                         noteIndex: index,
                         doDelete: _deleteNote)),
@@ -134,14 +133,21 @@ class _NotesPageState extends State<NotesPage> {
                         padding: EdgeInsets.all(16.0),
                         child: Text('#$_noteNumber'),
                       ),
-                      Flexible(
-                        child: Container(
-                          padding: EdgeInsets.all(16.0),
-                          child: Text(
-                            '$_note',
-                            overflow: TextOverflow.ellipsis,
+                      Column(
+                        children: <Widget>[
+                          Flexible(
+                            child: Container(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                _note['note'],
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ),
-                        ),
+                          Container(
+                            child: Text(dateString),
+                          )
+                        ],
                       ),
                     ],
                   ),
@@ -150,7 +156,7 @@ class _NotesPageState extends State<NotesPage> {
             ),
           );
         },
-        itemCount: _notes.length,
+        itemCount: _newNotes.length,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.of(context)
